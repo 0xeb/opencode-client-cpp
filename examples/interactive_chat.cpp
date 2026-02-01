@@ -13,12 +13,19 @@
 
 std::atomic<bool> g_running{true};
 std::mutex g_cout_mutex;
+opencode::EventStream* g_event_stream = nullptr;
+std::mutex g_stream_mutex;
 
 void event_monitor(opencode::Client& client)
 {
     try
     {
         auto events = client.subscribe_events();
+
+        {
+            std::lock_guard<std::mutex> lock(g_stream_mutex);
+            g_event_stream = &events;
+        }
 
         for (const auto& event : events)
         {
@@ -45,6 +52,11 @@ void event_monitor(opencode::Client& client)
     catch (...)
     {
     }
+
+    {
+        std::lock_guard<std::mutex> lock(g_stream_mutex);
+        g_event_stream = nullptr;
+    }
 }
 
 std::string truncate(const std::string& s, size_t max_len)
@@ -68,7 +80,6 @@ int main()
         std::cout << "Type 'quit' to exit, 'new' for new session\n\n";
 
         std::thread monitor(event_monitor, std::ref(client));
-        monitor.detach();
 
         auto session = client.create_session("Interactive Chat");
         std::cout << "Session: " << session.id() << "\n\n";
@@ -159,7 +170,15 @@ int main()
             });
         }
 
+        // Clean shutdown: stop the event monitor thread
         g_running = false;
+        {
+            std::lock_guard<std::mutex> lock(g_stream_mutex);
+            if (g_event_stream)
+                g_event_stream->close();
+        }
+        monitor.join();
+
         return 0;
     }
     catch (const std::exception& e)
