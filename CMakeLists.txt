@@ -126,36 +126,6 @@ if(OPENCODE_CLIENT_BUILD_EXAMPLES)
     endforeach()
 endif()
 
-# =============================================================================
-# Tests (if test files exist in ports monorepo)
-# =============================================================================
-
-set(OPENCODE_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../tests/opencode")
-if(EXISTS "${OPENCODE_TEST_DIR}/unit_tests.cpp")
-    add_executable(opencode-unit-tests "${OPENCODE_TEST_DIR}/unit_tests.cpp")
-    target_link_libraries(opencode-unit-tests PRIVATE opencode-client)
-    set_target_properties(opencode-unit-tests PROPERTIES FOLDER "Tests")
-endif()
-
-if(EXISTS "${OPENCODE_TEST_DIR}/e2e_test.cpp")
-    add_executable(opencode-e2e "${OPENCODE_TEST_DIR}/e2e_test.cpp")
-    target_link_libraries(opencode-e2e PRIVATE opencode-client)
-    set_target_properties(opencode-e2e PROPERTIES FOLDER "Tests")
-endif()
-
-if(EXISTS "${OPENCODE_TEST_DIR}/e2e_extended_test.cpp")
-    add_executable(opencode-e2e-extended "${OPENCODE_TEST_DIR}/e2e_extended_test.cpp")
-    target_link_libraries(opencode-e2e-extended PRIVATE opencode-client)
-    set_target_properties(opencode-e2e-extended PROPERTIES FOLDER "Tests")
-endif()
-
-# Quick chat test (if exists in build dir)
-if(EXISTS "${CMAKE_BINARY_DIR}/quick_chat_test.cpp")
-    add_executable(opencode-quick-chat "${CMAKE_BINARY_DIR}/quick_chat_test.cpp")
-    target_link_libraries(opencode-quick-chat PRIVATE opencode-client)
-    set_target_properties(opencode-quick-chat PROPERTIES FOLDER "Tests")
-endif()
-
 # Installation (optional - skip export for FetchContent deps)
 include(GNUInstallDirs)
 
